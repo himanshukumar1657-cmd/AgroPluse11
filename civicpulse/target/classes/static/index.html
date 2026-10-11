@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CivicPulse</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{--bg:#071126;--pn:#0c1a38;--bd:#1b2e5a;--tx:#e6edff;--mu:#8ea0c4;--ac:#2f7bff;--red:#ef4444;--amb:#f59e0b;--grn:#22c55e}
+*{box-sizing:border-box}html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--tx);font:14px/1.45 Inter,system-ui,sans-serif;display:grid;grid-template-columns:210px 1fr;grid-template-rows:62px 1fr;overflow:hidden}
+:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+header{grid-column:1/-1;display:flex;align-items:center;gap:22px;padding:0 20px;border-bottom:1px solid var(--bd);background:#081230}
+.logo{font-weight:700;font-size:26px;color:#fff}.logo b{color:var(--ac)}
+.top a{color:var(--mu);margin-right:16px;cursor:pointer}
+.sr{flex:1;max-width:460px;margin:0 auto}
+input,select,textarea{font:inherit;color:var(--tx);background:#0a1633;border:1px solid var(--bd);border-radius:8px;padding:9px 12px;width:100%}
+.me{display:flex;align-items:center;gap:10px}.me input{width:130px;padding:6px 8px}
+.av{width:34px;height:34px;border-radius:50%;background:var(--ac);display:grid;place-items:center;font-weight:700}
+#bell{position:relative;background:none;border:0;color:var(--tx);font-size:20px;cursor:pointer}
+#bell i{position:absolute;top:-4px;right:-6px;background:var(--red);border-radius:99px;font:600 10px Inter;padding:1px 5px;font-style:normal}
+nav{padding:16px 10px;border-right:1px solid var(--bd);display:flex;flex-direction:column;gap:4px;overflow:auto}
+nav button{display:flex;gap:12px;align-items:center;text-align:left;background:none;border:0;color:var(--mu);font:500 14px Inter;padding:11px 12px;border-radius:8px;cursor:pointer}
+nav button.on{background:var(--ac);color:#fff}
+.promo{margin-top:auto;border:1px solid var(--bd);border-radius:10px;padding:16px;text-align:center;font-weight:500}
+.btn{background:var(--ac);color:#fff;border:0;border-radius:8px;padding:10px 14px;font:600 14px Inter;cursor:pointer;width:100%;margin-top:10px}
+.btn.sm{width:auto;margin:0;padding:5px 10px;font-size:12px;background:none;border:1px solid var(--bd);color:var(--tx)}
+main{padding:14px;display:grid;grid-template-columns:1fr 410px;grid-template-rows:auto minmax(300px,1fr) auto;grid-template-areas:"k p" "m p" "b b";gap:14px;overflow:auto;min-height:0}
+.box{background:var(--pn);border:1px solid var(--bd);border-radius:12px}
+#kpi{grid-area:k;display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.k{display:flex;gap:12px;align-items:center;padding:14px}.k .ic{width:48px;height:48px;border-radius:10px;display:grid;place-items:center;font-size:22px;background:var(--c)}
+.k small{color:var(--mu);display:block}.k b{font-size:28px;line-height:1.1}.up{color:var(--grn)}.dn{color:var(--red)}
+#mapw{grid-area:m;position:relative;overflow:hidden;min-height:300px}#map{position:absolute;inset:0;background:#0a1226}
+.seg{position:absolute;z-index:500;top:12px;left:12px;display:flex;background:var(--pn);border:1px solid var(--bd);border-radius:8px;overflow:hidden}
+.seg button{background:none;border:0;color:var(--mu);padding:8px 16px;font:600 13px Inter;cursor:pointer}.seg .on{background:var(--ac);color:#fff}
+.leg{position:absolute;z-index:500;bottom:12px;left:12px;background:#0c1a38e6;border:1px solid var(--bd);border-radius:20px;padding:6px 14px;display:flex;gap:14px;font-size:12px}
+.leg i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;background:var(--c)}
+#panel{grid-area:p;display:flex;flex-direction:column;min-height:0}
+.tabs{display:flex;border-bottom:1px solid var(--bd)}.tabs button{flex:1;background:none;border:0;border-bottom:2px solid transparent;color:var(--mu);padding:13px 4px;font:600 14px Inter;cursor:pointer}
+.tabs .on{color:#fff;border-color:var(--ac)}.tabs em{font-style:normal;background:var(--c);border-radius:99px;padding:1px 7px;font-size:11px;margin-left:5px;color:#fff}
+.ph{display:flex;justify-content:space-between;align-items:center;padding:14px 16px 6px}.ph h2{margin:0;font-size:20px}.ph select{width:auto;padding:5px 8px}
+#list{overflow:auto;padding:8px 14px 14px;flex:1}
+.card{display:flex;gap:12px;background:#0a1633;border:1px solid var(--bd);border-left:4px solid var(--c);border-radius:10px;padding:12px;margin-bottom:10px;cursor:pointer}
+.card .ic{width:44px;height:44px;flex:none;border-radius:8px;display:grid;place-items:center;font-size:20px;background:color-mix(in srgb,var(--c) 25%,transparent)}
+.card .bd{flex:1;min-width:0}.card h4{margin:0;font-size:15px}.card p{margin:2px 0 8px;color:var(--mu);font-size:13px}
+.card img,.card video{width:100%;max-height:120px;object-fit:cover;border-radius:6px;margin-bottom:8px}
+.card time{color:var(--mu);font-size:12px;white-space:nowrap;align-self:flex-end}
+.pill{border:1px solid var(--c);color:var(--c);border-radius:99px;padding:1px 10px;font-size:12px;font-weight:500;margin-right:6px;display:inline-block}
+.acts{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap}
+#bot{grid-area:b;display:grid;grid-template-columns:1.1fr 1.1fr 1.4fr 1fr;gap:14px}#bot .box{padding:16px}#bot h3{margin:0 0 12px;font-size:16px}
+.donut{display:flex;gap:18px;align-items:center}.dn0{width:130px;height:130px;border-radius:50%;display:grid;place-items:center;flex:none}
+.dn0 div{width:88px;height:88px;border-radius:50%;background:var(--pn);display:grid;place-items:center;text-align:center;font-size:11px;color:var(--mu)}.dn0 b{display:block;font-size:22px;color:#fff}
+.lg div{display:flex;gap:8px;align-items:center;font-size:13px;margin:5px 0}.lg i{width:9px;height:9px;border-radius:50%;background:var(--c)}.lg span{margin-left:auto;color:var(--mu)}
+.act{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--bd);font-size:13px}.act:last-child{border:0}
+.act .ic{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;background:var(--c);flex:none}.act small{color:var(--mu);display:block}
+.qa{display:grid;grid-template-columns:1fr 1fr;gap:10px}.qa button{background:#0a1633;border:1px solid var(--bd);border-radius:10px;padding:12px;color:var(--tx);text-align:left;cursor:pointer;font:600 13px Inter}.qa small{display:block;color:var(--mu);font-weight:400;font-size:11px}
+.fm{padding:4px 16px 16px;overflow:auto}.fm label{display:block;font-weight:600;margin:12px 0 5px}.row{display:flex;gap:8px;align-items:center}
+.ai{margin-top:8px;padding:8px 10px;border:1px dashed var(--ac);border-radius:8px;font-size:13px;color:var(--mu)}
+.lb{display:flex;gap:12px;padding:9px 0;border-bottom:1px solid var(--bd);align-items:center}.lb b{width:22px;font-size:18px}.lb em{margin-left:auto;font:700 18px Inter;font-style:normal}
+.mapfocus main{grid-template-areas:"m p" "m p"}.mapfocus #kpi,.mapfocus #bot{display:none}
+@media(max-width:1100px){body{grid-template-columns:1fr;overflow:auto}nav,.top,.sr{display:none}main{grid-template-columns:1fr;grid-template-areas:"k" "m" "p" "b"}#kpi{grid-template-columns:1fr 1fr}#bot{grid-template-columns:1fr}#panel{max-height:70vh}}
+</style></head><body>
+<header><div class="logo">Civic<b>Pulse</b></div><div class="top"><a data-v="report">Report</a><a data-v="mine">Track</a><a data-v="analytics">Insights</a></div>
+<div class="sr"><input id="q" placeholder="Search location, issue, or area…" aria-label="Search issues"></div>
+<button id="bell" aria-label="Live updates">🔔<i hidden>0</i></button><div class="me"><div class="av" id="av">A</div><input id="who" placeholder="Your name" aria-label="Your name"></div></header>
+<nav><button data-v="list" class="on">▦ Dashboard</button><button data-v="report">⊕ Report Issue</button><button data-v="mine">▤ My Reports</button><button data-v="focus">🗺 Map View</button><button data-v="analytics">📊 Analytics</button>
+<div class="promo">Together for a cleaner, safer &amp; smarter city<button class="btn" data-v="report">Report Now →</button></div></nav>
+<main><div id="kpi"></div>
+<div id="mapw" class="box"><div class="seg"><button class="on" data-b="dark">Map</button><button data-b="sat">Satellite</button></div><div id="map"></div>
+<div class="leg"><span style="--c:var(--red)"><i></i>Open</span><span style="--c:var(--amb)"><i></i>In Progress</span><span style="--c:var(--grn)"><i></i>Resolved</span></div></div>
+<section id="panel" class="box" aria-live="polite"></section>
+<div id="bot"></div></main>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const CAT={ROAD:['Roads','#ef4444','🛣️'],WASTE:['Waste','#a855f7','🗑️'],WATER:['Water','#3b82f6','💧'],SAFETY:['Safety','#f97316','🛡️'],LIGHTING:['Lighting','#facc15','💡'],OTHER:['Others','#94a3b8','📍']};
+const SC={OPEN:'#ef4444',VERIFIED:'#ef4444',IN_PROGRESS:'#f59e0b',RESOLVED:'#22c55e'};
+const $=s=>document.querySelector(s),api=(u,o)=>fetch('/api'+u,o).then(r=>r.json());
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const who=$('#who');who.value=localStorage.who||'';const me=()=>who.value.trim()||'Anonymous';
+const av=()=>$('#av').textContent=me()[0].toUpperCase();who.onchange=()=>{localStorage.who=who.value;av();draw()};av();
+const ago=t=>{const m=(Date.now()-new Date(t))/6e4;return m<60?Math.max(1,~~m)+'m ago':m<1440?~~(m/60)+'h ago':~~(m/1440)+'d ago'};
+let issues=[],users=[],view='list',tab='open',sort='latest',pick=null,pm=null;
+const map=L.map('map',{zoomControl:true}).setView([28.6139,77.209],12);
+const base={dark:L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'© OSM © CARTO'}),sat:L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'Esri'})};
+base.dark.addTo(map);let cur='dark',mk=L.layerGroup().addTo(map),hot=L.layerGroup().addTo(map);
+document.querySelectorAll('[data-b]').forEach(b=>b.onclick=()=>{map.removeLayer(base[cur]);cur=b.dataset.b;base[cur].addTo(map);document.querySelectorAll('[data-b]').forEach(x=>x.classList.toggle('on',x==b))});
+const grp=s=>s=='RESOLVED'?'resolved':s=='IN_PROGRESS'?'prog':'open';
+const pri=s=>s>=4?['High Priority','#ef4444']:s==3?['Medium','#f59e0b']:['Low','#22c55e'];
+const vis=()=>{const q=$('#q').value.toLowerCase();return issues.filter(i=>(!q||(i.title+i.description+CAT[i.category][0]).toLowerCase().includes(q))&&(view!='mine'||i.reporter==me()))};
+function pct(c,p){return p?Math.round((c-p)/p*100):(c?100:0)}
+function win(arr,key,a,b){const n=Date.now(),d=864e5;return arr.filter(i=>i[key]&&n-new Date(i[key])>=a*d&&n-new Date(i[key])<b*d).length}
+function kpis(){const t=issues.length,r=issues.filter(i=>i.status=='RESOLVED').length,p=issues.filter(i=>i.status=='IN_PROGRESS').length;
+ const dt=pct(win(issues,'createdAt',0,7),win(issues,'createdAt',7,14)),dr=pct(win(issues,'resolvedAt',0,7),win(issues,'resolvedAt',7,14));
+ const D=d=>`<span class="${d>=0?'up':'dn'}">${d>=0?'↑':'↓'} ${Math.abs(d)}%</span> <small>vs last 7 days</small>`;
+ const K=(i,c,l,v,s)=>`<div class="box k"><div class="ic" style="--c:${c}">${i}</div><div><small>${l}</small><b>${v}</b> ${s}</div></div>`;
+ $('#kpi').innerHTML=K('⚠️','#b91c1c','Total Issues',t,D(dt))+K('✅','#15803d','Resolved',r,D(dr))+K('⏱️','#a16207','In Progress',p,'<small>right now</small>')+K('👥','#1d4ed8','Active Users',users.length,'<small>top contributors</small>')}
+function card(i){const[n,c,e]=CAT[i.category],[pl,pc]=pri(i.severity);
+ return `<article class="card" style="--c:${c}" onclick="map.flyTo([${i.lat},${i.lng}],15)"><div class="ic">${e}</div><div class="bd">
+ ${i.mediaUrl?(i.mediaType=='video'?`<video src="${i.mediaUrl}" controls></video>`:`<img src="${i.mediaUrl}" alt="">`):''}
+ <h4>${esc(i.title)}</h4><p>${esc(i.description)}</p><span class="pill">${n}</span><span class="pill" style="--c:${SC[i.status]}">${i.status=='VERIFIED'?'Verified':i.status=='IN_PROGRESS'?'In Progress':i.status=='RESOLVED'?'Resolved':'Open'}</span><span class="pill" style="--c:${pc}">${pl}</span>
+ <div class="acts" onclick="event.stopPropagation()">${i.status!='RESOLVED'?`<button class="btn sm" onclick="verify(${i.id})">👍 I see this too (${i.verifyCount}/3)</button>`:''}
+ ${i.status=='VERIFIED'?`<button class="btn sm" onclick="setS(${i.id},'IN_PROGRESS')">Start work</button>`:''}${i.status=='IN_PROGRESS'?`<button class="btn sm" onclick="setS(${i.id},'RESOLVED')">Mark resolved</button>`:''}</div></div><time>${ago(i.createdAt)}</time></article>`}
+const verify=id=>api(`/issues/${id}/verify?who=${encodeURIComponent(me())}`,{method:'POST'}),setS=(id,v)=>api(`/issues/${id}/status?value=${v}`,{method:'PATCH'});
+function pins(){mk.clearLayers();vis().forEach(i=>L.circleMarker([i.lat,i.lng],{radius:9,color:'#fff',weight:2,fillColor:SC[i.status],fillOpacity:.95}).addTo(mk).bindTooltip(esc(i.title)).on('click',()=>{view='list';tab=grp(i.status);panel()}))}
+function panel(){hot.clearLayers();const P=$('#panel');
+ if(view=='report')return report(P);if(view=='analytics')return analytics(P);
+ const v=vis(),cnt=g=>v.filter(i=>grp(i.status)==g).length;
+ let l=v.filter(i=>grp(i.status)==tab);l.sort(sort=='latest'?(a,b)=>new Date(b.createdAt)-new Date(a.createdAt):(a,b)=>b.severity-a.severity);
+ const T=(k,n,c)=>`<button class="${tab==k?'on':''}" onclick="tab='${k}';panel()">${n}<em style="--c:${c}">${cnt(k)}</em></button>`;
+ P.innerHTML=`<div class="tabs">${T('open','Open Issues','#ef4444')}${T('prog','In Progress','#f59e0b')}${T('resolved','Resolved','#22c55e')}</div>
+ <div class="ph"><h2>📍 ${l.length} ${tab=='open'?'open':tab=='prog'?'in progress':'resolved'}${view=='mine'?' (yours)':' near you'}</h2><select aria-label="Sort" onchange="sort=this.value;panel()"><option value="latest" ${sort=='latest'?'selected':''}>Sort: Latest</option><option value="sev" ${sort=='sev'?'selected':''}>Sort: Severity</option></select></div>
+ <div id="list">${l.map(card).join('')||'<p style="color:var(--mu)">Nothing here yet.</p>'}</div>`}
+function report(P){P.innerHTML=`<div class="ph"><h2>Report a problem</h2></div><div class="fm">
+ <label for="t">What's wrong?</label><input id="t" placeholder="e.g. Deep pothole outside the school"><label for="d">Details</label><textarea id="d" rows="3"></textarea>
+ <div id="ai" class="ai">Category is suggested as you type.</div><label for="m">Photo or video</label><input id="m" type="file" accept="image/*,video/*" capture="environment">
+ <label>Location</label><div class="row"><button class="btn sm" id="gps">📍 Use my location</button><span id="loc" style="color:var(--mu);font-size:12px">or tap map, search, or type coordinates</span></div>
+ <div class="row" style="margin-top:8px"><input id="addr" placeholder="Search address or area" aria-label="Search address"><button class="btn sm" id="find">Search</button></div>
+ <div class="row" style="margin-top:8px"><input id="la" placeholder="Latitude" inputmode="decimal" aria-label="Latitude"><input id="ln" placeholder="Longitude" inputmode="decimal" aria-label="Longitude"><button class="btn sm" id="setll">Set</button></div>
+ <button class="btn" id="go">Submit report</button></div>`;
+ let tm;const upd=()=>{clearTimeout(tm);tm=setTimeout(async()=>{const r=await api('/categorize',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:$('#t').value+' '+$('#d').value})});$('#ai').innerHTML=`Suggested: <b>${CAT[r.category][0]}</b> · severity ${r.severity}/5 · ${Math.round(r.confidence*100)}% sure`},300)};
+ $('#t').oninput=$('#d').oninput=upd;
+ const set=ll=>{ll=L.latLng(ll);pick=ll;pm?.remove();pm=L.marker(ll,{draggable:true}).addTo(map).on('dragend',e=>set(e.target.getLatLng()));$('#loc').textContent='Selected ✓';$('#la').value=ll.lat.toFixed(6);$('#ln').value=ll.lng.toFixed(6)};
+ map.off('click').on('click',e=>view=='report'&&set(e.latlng));
+ $('#gps').onclick=()=>navigator.geolocation.getCurrentPosition(g=>{const l=L.latLng(g.coords.latitude,g.coords.longitude);map.flyTo(l,16);set(l)},()=>$('#loc').textContent='Location blocked. Use search or tap map.');
+ $('#find').onclick=async()=>{const q=$('#addr').value.trim();if(!q)return;$('#loc').textContent='Searching…';try{const r=await(await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q='+encodeURIComponent(q))).json();if(!r.length){$('#loc').textContent='No match. Try a landmark or coordinates.';return}const l=L.latLng(+r[0].lat,+r[0].lon);map.flyTo(l,16);set(l)}catch(e){$('#loc').textContent='Search failed. Enter coordinates instead.'}};
+ $('#addr').onkeydown=e=>{if(e.key=='Enter')$('#find').click()};
+ $('#setll').onclick=()=>{const a=parseFloat($('#la').value),b=parseFloat($('#ln').value);if(isNaN(a)||isNaN(b)||Math.abs(a)>90||Math.abs(b)>180){$('#loc').textContent='Latitude -90..90, longitude -180..180.';return}const l=L.latLng(a,b);map.flyTo(l,16);set(l)};
+ $('#go').onclick=async()=>{if(!$('#t').value.trim()||!pick){$('#loc').textContent=pick?'Add a title first.':'Choose a location first.';return}
+  const f=new FormData();f.append('title',$('#t').value);f.append('description',$('#d').value);f.append('lat',pick.lat);f.append('lng',pick.lng);f.append('reporter',me());if($('#m').files[0])f.append('media',$('#m').files[0]);
+  await fetch('/api/issues',{method:'POST',body:f});pm?.remove();pick=null;go('list')}}
+async function analytics(P){const d=await api('/insights');P.innerHTML=`<div class="ph"><h2>Insights</h2></div><div class="fm" style="padding-top:0"><p style="color:var(--mu)">Circles on the map show likely trouble spots.</p>
+ <h3>Hotspots</h3>${d.hotspots.map(h=>`<div class="act"><div class="ic" style="--c:${CAT[h.topCategory][1]}">${CAT[h.topCategory][2]}</div><div>${CAT[h.topCategory][0]}<small>${h.count} open · risk ${h.score}</small></div></div>`).join('')||'None'}
+ <h3>Next 7 days (forecast)</h3>${d.forecast.map(f=>`<div class="act"><div>${CAT[f.category][0]}</div><small style="margin-left:auto">${f.last7} this week → <b style="color:#fff">~${f.next7}</b></small></div>`).join('')}
+ <h3>Top contributors</h3>${users.map((c,n)=>`<div class="lb"><b>${n+1}</b><div>${esc(c.name)}<small style="display:block;color:var(--mu)">${c.badge} · ${c.reports} reports</small></div><em>${c.points}</em></div>`).join('')}</div>`;
+ d.hotspots.forEach(h=>L.circle([h.lat,h.lng],{radius:350+h.score*60,color:'#ef4444',fillOpacity:.15,weight:2}).addTo(hot))}
+function bottom(){const by={};issues.forEach(i=>by[i.category]=(by[i.category]||0)+1);const t=issues.length||1;let a=0;
+ const g=Object.entries(by).map(([k,v])=>{const s=a;a+=v/t*360;return `${CAT[k][1]} ${s}deg ${a}deg`}).join(',');
+ const rec=[...issues].sort((x,y)=>new Date(y.resolvedAt||y.createdAt)-new Date(x.resolvedAt||x.createdAt)).slice(0,4);
+ const days=[...Array(7)].map((_,n)=>{const d=new Date();d.setDate(d.getDate()-6+n);return d}),same=(s,d)=>s&&new Date(s).toDateString()==d.toDateString();
+ const R=days.map(d=>issues.filter(i=>same(i.createdAt,d)).length),S=days.map(d=>issues.filter(i=>same(i.resolvedAt,d)).length),mx=Math.max(4,...R,...S);
+ const pt=a=>a.map((v,n)=>`${20+n*60},${120-v/mx*100}`).join(' ');
+ $('#bot').innerHTML=`<div class="box"><h3>Issue Type Breakdown</h3><div class="donut"><div class="dn0" style="background:conic-gradient(${g||'#1b2e5a 0 360deg'})"><div><span><b>${issues.length}</b>Total Issues</span></div></div>
+ <div class="lg" style="flex:1">${Object.entries(by).map(([k,v])=>`<div style="--c:${CAT[k][1]}"><i></i>${CAT[k][0]}<span>${v} (${Math.round(v/t*100)}%)</span></div>`).join('')}</div></div></div>
+ <div class="box"><h3>Recent Activity</h3>${rec.map(i=>`<div class="act"><div class="ic" style="--c:${SC[i.status]}55">${i.status=='RESOLVED'?'✅':i.status=='IN_PROGRESS'?'🔧':'🚨'}</div><div style="flex:1">${esc(i.title)}<small>${i.status.replace('_',' ').toLowerCase()} · ${ago(i.resolvedAt||i.createdAt)}</small></div></div>`).join('')}</div>
+ <div class="box"><h3>Issue Trends <small style="color:var(--mu);font-weight:400">(Last 7 Days)</small></h3><svg viewBox="0 0 400 150" width="100%" role="img" aria-label="Reported vs resolved, last 7 days"><g stroke="#1b2e5a">${[20,45,70,95,120].map(y=>`<line x1="20" x2="390" y1="${y}" y2="${y}"/>`).join('')}</g>
+ <polyline points="${pt(R)}" fill="none" stroke="#2f7bff" stroke-width="3"/><polyline points="${pt(S)}" fill="none" stroke="#22c55e" stroke-width="3"/>
+ ${days.map((d,n)=>`<text x="${20+n*60}" y="142" fill="#8ea0c4" font-size="10" text-anchor="middle">${d.getDate()}</text>`).join('')}<text x="250" y="12" fill="#2f7bff" font-size="11">● Reported</text><text x="320" y="12" fill="#22c55e" font-size="11">● Resolved</text></svg></div>
+ <div class="box"><h3>Quick Actions</h3><div class="qa"><button data-v="report">✏️ Report Issue<small>Add a new complaint</small></button><button data-v="mine">📍 Track Status<small>Check your reports</small></button><button data-v="near">🗺️ Nearby Issues<small>See issues near you</small></button><button data-v="analytics">📈 Insights<small>Hotspots &amp; forecast</small></button></div></div>`}
+function draw(){kpis();pins();panel();bottom();bind()}
+function go(v){if(v=='focus'){document.body.classList.toggle('mapfocus');setTimeout(()=>map.invalidateSize(),50);return}
+ if(v=='near'){navigator.geolocation.getCurrentPosition(g=>map.flyTo([g.coords.latitude,g.coords.longitude],14),()=>0);v='list'}
+ view=v;pm?.remove();pick=null;if(v!='report')map.off('click');
+ document.querySelectorAll('nav button[data-v]').forEach(b=>b.classList.toggle('on',b.dataset.v==v));draw()}
+function bind(){document.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>go(b.dataset.v))}
+$('#q').oninput=()=>{pins();panel()};
+let n=0;async function load(){[issues,users]=await Promise.all([api('/issues'),api('/leaderboard')]);draw()}
+const es=new EventSource('/api/stream');['created','updated'].forEach(t=>es.addEventListener(t,()=>{n++;$('#bell i').hidden=false;$('#bell i').textContent=n;load()}));
+$('#bell').onclick=()=>{n=0;$('#bell i').hidden=true};
+load();
+</script></body></html>

@@ -1,0 +1,10 @@
+com\civicpulse\ApiController.class
+com\civicpulse\CivicPulseApplication.class
+com\civicpulse\Citizen.class
+com\civicpulse\IssueRepo.class
+com\civicpulse\IssueService.class
+com\civicpulse\SeedData.class
+com\civicpulse\CitizenRepo.class
+com\civicpulse\Categorizer.class
+com\civicpulse\Issue.class
+com\civicpulse\WebConfig.class
